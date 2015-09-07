@@ -60,6 +60,8 @@ class IstFinder(object):
         # User-Agent
         self.browser.addheaders = [('User-agent', 'Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.0.1) Gecko/2008071615 Fedora/3.0.1-1.fc9 Firefox/3.0.1')]
 
+        # Course
+        self.course = ""
         # Holds user registered disciplines
         self.reg_disciplines = []
         
@@ -95,9 +97,11 @@ class IstFinder(object):
 
     def registered_disciplines(self):
         site_tecnico = self.browser.find_link(text = 'Website T\xc3\xa9cnico')
+       
         self.browser.follow_link(text = "F\xc3\xa9nix")
         self.browser.follow_link(text = "Prosseguir")
         self.browser.follow_link(text = "Estudante")
+        self.course = self.get_link("https://fenix.tecnico.ulisboa.pt/cursos/")
         # student = self.browser.find_link(url = "/student")
         # print self.browser.response().read()
         # self.browser.follow_link(text ="Estudante")
@@ -108,17 +112,15 @@ class IstFinder(object):
 
     def get_links(self, link):
         return BeautifulSoup(self.browser.response()).findAll('a', href=re.compile(link))
+    
+    def get_link(self,link):
+        return BeautifulSoup(self.browser.response()).find('a', href=re.compile(link))
 
     def unicode_encode(self, word):
         return unicodedata.normalize('NFD', word).encode('ascii', 'ignore')
     
     def follow_path(self):
-        try:
-            self.browser.follow_link(text = 'Website T\xc3\xa9cnico')
-        except LinkNotFoundError:
-            self.browser.follow_link(self.site_tecnico)
-        self.browser.follow_link(text = 'Ensino')
-        self.browser.follow_link(self.browser.find_link(url="//fenix.tecnico.ulisboa.pt/cursos/leic-t"))
+        self.browser.follow_link(self.browser.find_link(url=self.course['href']))
         curriculo_link = self.browser.find_link(text = 'Curriculo')
         self.browser.follow_link(text = 'Curriculo')
         disciplines = BeautifulSoup(self.browser.response()).findAll('a', href=re.compile('https://fenix.tecnico.ulisboa.pt/cursos/leic-t/disciplina-curricular/'))
